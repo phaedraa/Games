@@ -1,5 +1,5 @@
 '''
-A clone of 2048 game.
+My creation of 2048 game.
 '''
 
 import poc_2048_gui
