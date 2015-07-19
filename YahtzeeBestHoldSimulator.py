@@ -23,7 +23,6 @@ def gen_all_sequences(outcomes, length):
         answer_set = temp_set
     return answer_set
 
-
 def score(hand):
     """
     Compute and return the maximal score as integer for a Yahtzee hand according 
@@ -128,7 +127,6 @@ def strategy(hand, num_die_sides):
         if expected_val > max_score:
             max_score = expected_val
             hold_optimal = hold
-    
     return (max_score, hold_optimal)
 
 def best_move(hand):
