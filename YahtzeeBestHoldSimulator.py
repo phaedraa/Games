@@ -3,10 +3,6 @@ Planner for Yahtzee
 Simplifications:  only allow discard and roll, only score against upper level
 """
 
-# Used to increase the timeout, if necessary
-#import codeskulptor
-#codeskulptor.set_timeout(20)
-
 def gen_all_sequences(outcomes, length):
     """
     Iterative function that enumerates the set of all sequences of outcomes of 
@@ -141,8 +137,3 @@ def best_move(hand):
         "with expected score", hand_score
     
 best_move((1, 1, 1, 5, 6))
- 
-    
-
-
-
