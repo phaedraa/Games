@@ -20,7 +20,7 @@ def remove_duplicates(list1):
     list2 = list(list1)
     count_vals_dict = {}
     for val in list1:
-        if count_vals_dict.get(val) == None:
+        if not count_vals_dict.get(val):
             count_vals_dict[val] = 1
         else:
             list2.remove(val)
@@ -53,7 +53,7 @@ def intersect(list1, list2):
         
 def initial_merge(list1, list2):
     '''
-    Merge sorted list1 and list2 up to whichever list has minimum length
+    Merge sorted list1 and list2, up to whichever list has minimum length
     '''
     l1_idx = 0
     l2_idx = 0
@@ -94,9 +94,9 @@ def merge(list1, list2):
     Returns a new sorted list containing all of the elements that
     are in either list1 and list2.
     ''' 
-    if len(list1) == 0:
+    if not list1:
         return list(list2)
-    elif len(list2) == 0:
+    elif not list2:
         return list(list1)
     
     return final_merge(list1, list2)
