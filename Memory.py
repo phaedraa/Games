@@ -23,7 +23,8 @@ BOARD_DIM = 600
 # card constant globals
 SUITS = ('C', 'S', 'H', 'D')
 RANKS = ('A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
-VALUES = {'A':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, 'T':10, 'J':10, 'Q':10, 'K':10}
+VALUES = {'A':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, 'T':10,
+            'J':10, 'Q':10, 'K':10}
 
 class Card:
     def __init__(self, suit, rank):
@@ -51,11 +52,13 @@ class Card:
         if is_front:
             card_loc = (CARD_CENTER[0] + CARD_SIZE[0] * RANKS.index(self.rank), 
                     CARD_CENTER[1] + CARD_SIZE[1] * SUITS.index(self.suit))
-            canvas.draw_image(card_images, card_loc, CARD_SIZE, [pos[0] + CARD_CENTER[0], pos[1] + CARD_CENTER[1]], CARD_SIZE)
+            canvas.draw_image(card_images, card_loc, CARD_SIZE, 
+                [pos[0] + CARD_CENTER[0], pos[1] + CARD_CENTER[1]], CARD_SIZE)
 
         else:
             card_loc = (CARD_CENTER[0] + CARD_SIZE[0], CARD_CENTER[1])
-            canvas.draw_image(card_back, card_loc, CARD_SIZE, [pos[0] + CARD_CENTER[0], pos[1] + CARD_CENTER[1]], CARD_SIZE)
+            canvas.draw_image(card_back, card_loc, CARD_SIZE, 
+                [pos[0] + CARD_CENTER[0], pos[1] + CARD_CENTER[1]], CARD_SIZE)
             
 class Hand:
     def __init__(self):
@@ -77,7 +80,8 @@ class Hand:
         self.card_list.append(card) # add a card object to a hand
 
     def get_value(self):
-        # count aces as 1, if the hand has an ace, then add 10 to hand value if it doesn't bust
+        # count aces as 1, if the hand has an ace, then add 10 to hand value 
+        # if it doesn't bust
         value = 0
         has_Ace = False
         for card in self.card_list:
