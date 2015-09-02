@@ -1,4 +1,4 @@
-# Blackjack
+# Blackjack Interactive Game
 
 import simplegui
 import random
@@ -8,23 +8,43 @@ import math
 CARD_SIZE = (72, 96)
 CARD_CENTER = (36, 48)
 card_images = simplegui.load_image("http://storage.googleapis.com/codeskulptor-assets/cards_jfitz.png")
-
-CARD_BACK_SIZE = (72, 96)
-CARD_BACK_CENTER = (36, 48)
 card_back = simplegui.load_image("http://storage.googleapis.com/codeskulptor-assets/card_jfitz_back.png")    
 
-# game global variables
-in_play = False
-outcome = ""
-wins = 0
-losses = 0
-BOARD_DIM = 600
-
-# card constant globals
+# card constants
 SUITS = ('C', 'S', 'H', 'D')
 RANKS = ('A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
 VALUES = {'A':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, 'T':10,
             'J':10, 'Q':10, 'K':10}
+
+#BlackJack Board Constants   
+BOARD_DIM = 600
+BUTTON_WDT = int(math.floor(BOARD_DIM / 3)) 
+HDR_FNT_SZ = 32 #header font size
+SUB_HDR_FNT_SZ = 25 #sub-header font size
+OUTCOME_FNT_SZ = 30 
+MAIN_FNT_CLR = 'Black'
+SCORE_FNT_CLR = 'Blue'
+QSTN_FNT_CLR = 'White'
+GAME_BGD_CLR = 'Green'
+TITLE = "BlackJack"
+PLYR_TITLE = "Player"
+DLR_TITLE = "Dealer"
+TITLE_HT_FCT = 0.07 #title height factor
+PLYR_TTL_HT_FCT = 0.17 #player title height factor 
+DLR_TTL_HT_FCT =  0.47 #dealery title height factor
+HIT_OR_STND_HT_FCT = 0.75 #hit or stand question height factor
+DEAL_HT_FCT = 0.95 #New Deal question height factor 
+OUTCOME_HT_FCT = 0.9 #outcome text height factor     
+PLAYER_INIT_POS = [int(math.floor(BOARD_DIM/30)), 
+                        int(math.floor(BOARD_DIM/5))]
+DEALER_INIT_POS = [int(math.floor(BOARD_DIM/30)), 
+                        int(math.floor(BOARD_DIM/3)) + CARD_SIZE[1]]
+SCORE_POS = [int(math.floor(BOARD_DIM/12)), 
+                    int(math.floor(BOARD_DIM*11/12))]
+
+
+def main():
+    new_game = BlackJack()
 
 class Card:
     def __init__(self, suit, rank):
@@ -46,7 +66,8 @@ class Card:
         return self.rank
     
     def get_card(self):
-        return self.suit + self.rank
+        print str(self.suit) + str(self.rank)
+        return str(self.suit) + str(self.rank)
 
     def draw(self, canvas, pos, is_front):
         if is_front:
@@ -120,99 +141,120 @@ class Deck:
         random.shuffle(self.deck)
         
     def deal_card(self):
+        #print "deck: ", self.deck
+        print "deck size: ", len(self.deck)
         card_idx = random.randrange(len(self.deck))
-        return self.deck.pop(card_idx)
+        a = self.deck.pop(card_idx)
+        print "dealt card: ", a
+        return a
     
     def __str__(self):
         card_deck = "Card Deck: "
         for card in self.deck:
-            card_deck += ' ' + card.get_card()
+            card_deck += ' ' + card.__str__()
         return card_deck
 
-def deal():
-    global outcome, in_play, game_deck, player_hand, dealer_hand, wins, losses
-    if in_play:
-        losses += 1
-    outcome = None
-    game_deck = Deck()
-    game_deck.shuffle()
-    dealer_hand = Hand()
-    player_hand = Hand()
-    dealer_hand.add_card(game_deck.deal_card())
-    player_hand.add_card(game_deck.deal_card())
-    dealer_hand.add_card(game_deck.deal_card())
-    player_hand.add_card(game_deck.deal_card())
-    in_play = True
-
-def hit():
-    global outcome, in_play, game_deck, player_hand, dealer_hand, wins, losses
-    if in_play:
-        hand_value = player_hand.get_value()
-        if hand_value <= 21:
-            player_hand.add_card(game_deck.deal_card())
-        else:
-            outcome = "Busted!"
-            losses += 1
-    print outcome
+class BlackJack:
     
-def stand():
-    global outcome, in_play, game_deck, player_hand, dealer_hand, wins, losses
-    if in_play:
-        if outcome == "Busted!":
-            print outcome
-        elif player_hand.get_value() > 21:
-            outcome = "Busted!"
-            print outcome
-            losses += 1
-        else:
-            while dealer_hand.get_value() < 17:
-                dealer_hand.add_card(game_deck.deal_card())
-            dealer_value = dealer_hand.get_value()
-            player_value = player_hand.get_value()
-            if dealer_value > 21 or player_value > dealer_value:
-                outcome = "Player wins"
-                print outcome
-                wins += 1
+    def __init__(self):
+        self.wins = 0
+        self.losses = 0
+        self.outcome = ""
+        self.in_play = False
+        self.player_hand = Hand()
+        self.dealer_hand = Hand()
+        self.game_deck = Deck()
+
+        # initialization frame
+        self.frame = simplegui.create_frame(TITLE, BOARD_DIM, BOARD_DIM)
+        self.frame.set_canvas_background(GAME_BGD_CLR)
+        
+        # buttons and canvas callbacks
+        self.frame.add_button("Deal", self.deal, BUTTON_WDT)
+        self.frame.add_button("Hit",  self.hit, BUTTON_WDT)
+        self.frame.add_button("Stand", self.stand, BUTTON_WDT)
+        self.frame.set_draw_handler(self.draw)
+        
+        # initialize board with first deal
+        self.deal()
+        self.frame.start()
+
+    def deal(self):
+        if self.in_play:
+            self.losses += 1
+        self.outcome = None
+        self.game_deck = Deck()
+        self.game_deck.shuffle()
+        self.dealer_hand = Hand()
+        self.player_hand = Hand()
+        self.dealer_hand.add_card(self.game_deck.deal_card())
+        self.player_hand.add_card(self.game_deck.deal_card())
+        self.dealer_hand.add_card(self.game_deck.deal_card())
+        self.player_hand.add_card(self.game_deck.deal_card())
+        self.in_play = True
+
+    def hit(self):
+        if self.in_play:
+            hand_value = self.player_hand.get_value()
+            if hand_value <= 21:
+                self.player_hand.add_card(self.game_deck.deal_card())
             else:
-                outcome = "Dealer wins"
-                print outcome
-                losses += 1
-    in_play = False
+                self.outcome = "Busted!"
+                self.losses += 1
+        print self.outcome
     
-def center_x(text, y_pos_factor):
-    half_board = int(math.floor(BOARD_DIM / 2))
-    half_text = 10 * int(math.ceil(len(text) / 2))
-    return [half_board - half_text, int(math.floor(BOARD_DIM * y_pos_factor))]
+    def stand(self):
+        global outcome, in_play, game_deck, player_hand, dealer_hand, wins, losses
+        if self.in_play:
+            if self.outcome != "Busted!" and self.player_hand.get_value() > 21:
+                self.outcome = "Busted!"
+                self.losses += 1
+            else:
+                while self.dealer_hand.get_value() < 17:
+                    self.dealer_hand.add_card(self.game_deck.deal_card())
+                dealer_value = self.dealer_hand.get_value()
+                player_value = self.player_hand.get_value()
+                if dealer_value > 21 or player_value > dealer_value:
+                    self.outcome = "Player wins"
+                    self.wins += 1
+                else:
+                    self.outcome = "Dealer wins"
+                    self.losses += 1
+        print self.outcome
+        self.in_play = False
     
-def draw(canvas):
-    global player_hand, dealer_hand, outcome, in_play, wins, losses
-    canvas.draw_text("BlackJack", center_x("BlackJack", .07), 32, 'Black')
-    player_hand.draw(canvas, [20, 120], False)
-    canvas.draw_text("Player", center_x("Player", .17), 25, 'Black')
-    dealer_hand.draw(canvas, [20, 200 + CARD_SIZE[1]], in_play)
-    canvas.draw_text("Dealer", center_x("Dealer", .47), 25, 'Black')
-    if wins + losses == 0:
-        current_score = 0.0
-    else:
-        current_score = round(float(wins)/(wins + losses), 2)
-    canvas.draw_text("Current score: " + str(current_score), [50, 550], 25, 'Blue')
-    if outcome != None:
-        canvas.draw_text(str(outcome), center_x(str(outcome), 0.9), 30, 'White')
-        canvas.draw_text("New deal?", center_x("New deal?", .95), 25, 'White')
-    else:
-        canvas.draw_text("Hit or stand?", center_x("Hit or stand?", .75), 25, 'White')
+    def center_x(self, text, y_pos_factor):
+        '''
+        Returns a list of x, y coordinates. The x is centered based on the board
+        width and text length to be centered. The y is position is a fraction of
+        the board height, based on the input y_pos_factor.
+        '''
+        half_board = int(math.floor(BOARD_DIM / 2))
+        half_text = 10 * int(math.ceil(len(text) / 2))
+        return [half_board - half_text, int(math.floor(BOARD_DIM*y_pos_factor))]
     
-# initialization frame
-frame = simplegui.create_frame("Blackjack", BOARD_DIM, BOARD_DIM)
-frame.set_canvas_background("Green")
-
-# buttons and canvas callbacks
-button_width = int(math.floor(BOARD_DIM / 3))
-frame.add_button("Deal", deal, button_width)
-frame.add_button("Hit",  hit, button_width)
-frame.add_button("Stand", stand, button_width)
-frame.set_draw_handler(draw)
-
-# initialize board with first deal
-deal()
-frame.start()
+    def draw(self, canvas):
+        global player_hand, dealer_hand, outcome, in_play, wins, losses
+        canvas.draw_text(TITLE, self.center_x(TITLE, TITLE_HT_FCT), HDR_FNT_SZ, 
+                        MAIN_FNT_CLR)
+        self.player_hand.draw(canvas, PLAYER_INIT_POS, False)
+        canvas.draw_text(PLYR_TITLE, self.center_x(PLYR_TITLE, PLYR_TTL_HT_FCT), 
+                        SUB_HDR_FNT_SZ, MAIN_FNT_CLR)
+        self.dealer_hand.draw(canvas, DEALER_INIT_POS, self.in_play)
+        canvas.draw_text(DLR_TITLE, self.center_x(DLR_TITLE, DLR_TTL_HT_FCT), 
+                        SUB_HDR_FNT_SZ, MAIN_FNT_CLR)
+        if self.wins + self.losses == 0:
+            current_score = 0.0
+        else:
+            current_score = round(float(self.wins)/(self.wins + self.losses), 2)
+        canvas.draw_text("Current score: " + str(current_score), SCORE_POS, 
+                        SUB_HDR_FNT_SZ, SCORE_FNT_CLR)
+        if self.outcome != None:
+            canvas.draw_text(str(self.outcome), self.center_x(str(self.outcome),
+                             OUTCOME_HT_FCT), OUTCOME_FNT_SZ, SCORE_FNT_CLR)
+            canvas.draw_text("New deal?", self.center_x("New deal?", 
+                            HIT_OR_STND_HT_FCT), SUB_HDR_FNT_SZ,QSTN_FNT_CLR)
+        else:
+            canvas.draw_text("Hit or stand?", self.center_x("Hit or stand?", 
+                HIT_OR_STND_HT_FCT), SUB_HDR_FNT_SZ, QSTN_FNT_CLR)
+main()
